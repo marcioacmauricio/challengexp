@@ -4,15 +4,14 @@ import { Link } from 'react-router-dom';
 export default class Header extends React.Component {
 	constructor(props) {
 		super(props);
-		this.toggle = this.toggle.bind(this);
 		this.state = {
+			artist: "",
 			isOpen: false
 		};
 	}
-	toggle() {
-		this.setState({
-			isOpen: !this.state.isOpen
-		});
+
+	componentWillReceiveProps(nextProps) {
+		debugger
 	}
 	render() {
 		return (
@@ -26,19 +25,9 @@ export default class Header extends React.Component {
 						<h1 className="aside-title">React Spotify Player</h1>
 					</a>
 				</header>
-
 				<div>
-
 					<div>
-						<div>
-							<form id="search-form" className="form-wrapper">
-								<input id="search-input" className="form-input" type="text" name="query" placeholder="Type an artist/album" />
-							</form>
-						</div>
-						<div>
-							{this.props.children}
-						</div>
-						
+						{this.props.children}
 					</div>
 				</div>
 			</div>
