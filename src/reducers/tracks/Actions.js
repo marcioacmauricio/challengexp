@@ -1,8 +1,8 @@
-import { READ_ALBUMS, FETCH_ALBUMS } from './types'
+import { READ_TRACKS, FETCH_TRACKS } from './types'
 import { Token, Url } from '../Conf'
 
-export const readAlbums = (albumId) => dispatch => {
-	fetch(Url + 'albums/' + albumId, { 
+export const readTracks = (albumId) => dispatch => {
+	fetch(Url + 'tracks/' + albumId, { 
 		method : 'GET',
 			headers : {
 				'Authorization': 'Bearer ' + Token
@@ -13,13 +13,15 @@ export const readAlbums = (albumId) => dispatch => {
 		)
 		.then(
 			albumsList => dispatch({
-			type: READ_ALBUMS,
+			type: READ_TRACKS,
 			payload: albumsList
 		})
 	);
 }
 
-export const fetchAlbums = (todoData) => dispatch => {
+
+
+export const fetchTracks = (todoData) => dispatch => {
 	let queryString = Object.keys(todoData).map(key => key + '=' + todoData[key]).join('&');
 	fetch(Url + 'search?' + queryString , { 
 		method : 'GET',
@@ -32,8 +34,8 @@ export const fetchAlbums = (todoData) => dispatch => {
 		)
 		.then(
 			albumsList => dispatch({
-			type: FETCH_ALBUMS,
+			type: FETCH_TRACKS,
 			payload: albumsList
 		})
-	);
+	);TRACKS
 }

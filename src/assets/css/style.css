@@ -181,7 +181,6 @@ section {
 }
 
 .music {
-	cursor: pointer;
 	display: flex;
 	font-size: 18px;
 	font-weight: 300;
@@ -224,4 +223,12 @@ section {
 .music-duration {
 	text-align: right;
 	width: 100%;
+}
+.music-preview {
+	margin-right: 20px;
+	min-width: 25px;	
+}
+.preview-image {
+	cursor: pointer;
+	height: 1.8em;
 }
