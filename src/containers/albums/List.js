@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom'
 import { fetchAlbums } from '../../reducers/albums/Actions'
 import { connect } from 'react-redux'
 import { If, Then, Else } from 'react-if'
+import debounce from 'lodash.debounce'
 
 class albumsList extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			queryParamns: "",
+			query: "",
 			item: {},
 			tracks: {
 				href: "",
@@ -21,29 +22,36 @@ class albumsList extends React.Component {
 			}
 		};
 		this.items = true
-		this.onChangeSearch = this.onChangeSearch.bind(this)
+		this.debouncedHandleChange = debounce(this.debouncedHandleChange, 500)
+
 	}
-	onChangeSearch(e){
+	handleChange = (event) => {
+		this.debouncedHandleChange(event.target)
+		let newState = { ...this.state }
+		newState.query = event.target.value
+		this.setState(newState)
+	} 
+	debouncedHandleChange = (target) => {
 		let term = "" 
-		if (e.target.value !== ""){
-			term = e.target.value
+		if (target.value !== ""){
+			term = target.value
 		}
 		if (term.length > 2){
 			let Post = {
-				q: e.target.value,
+				q: target.value,
 				type: 'track',
 				limit: 10,
 				offset: 0
 			}
-			this.props.fetchAlbums( Post );
+			this.props.fetchAlbums( Post )
 		}
-		
-	}	
+	}   
+
 	componentWillReceiveProps(nextProps) {
 		if ( (typeof nextProps.items === 'object') && (typeof nextProps.items !== null) ){
 			let newState = { ...this.state }
 			newState.tracks = { ...newState.tracks, ...nextProps.items.tracks }
-			this.setState(newState)		
+			this.setState(newState)     
 		}
 	}
 	renderAlbums(){
@@ -68,13 +76,13 @@ class albumsList extends React.Component {
 					<div id="album-info" className="album-info">
 						<Link to={`/albums/${j}`}>
 							<img className="album-image" src={ item.img.url } alt={ item.artistName }/>
-						</Link>						
+						</Link>                     
 						<p className="album-title">{ item.albumName }</p>
 						<p className="album-artist">{ item.artistName }</p>
 						<p className="album-counter">{ item.totalTracks }</p>
 					</div>
 				</div>
-			)			
+			)           
 		}
 
 		return renderList
@@ -87,13 +95,13 @@ class albumsList extends React.Component {
 
 				<div>
 					<form id="search-form" className="form-wrapper">
-						<input id="search-input" className="form-input" type="text" placeholder="Compece a escrever..."  onChange={this.onChangeSearch} />
+						<input value={ this.state.value } className="form-input" type="text" placeholder="Compece a escrever..."  onChange={ this.handleChange } />
 					</form>
 				</div>
 				<If condition={ this.state.tracks.items.length > 0 }>
 					<Then>
 						<h1>Lista de Albuns</h1>
-						{albumsItems}					
+						{albumsItems}                   
 					</Then>
 					<Else>
 						<h1>Pesquise sua banda favorita</h1>

@@ -1,11 +1,9 @@
 import { READ_ALBUMS, FETCH_ALBUMS, NOTIFY_ERROR } from './types'
-import { Token, Url } from '../Conf'
 import { getCredentials } from '../../auth/getCredentials'
-
 export function readAlbums(albumsData) {
 	const resource = Url + '/albums/' + albumsData.id;
 	return async (dispatch) => {
-		
+
 		let credentials = await getCredentials()
 		if (!credentials){
 			dispatch({

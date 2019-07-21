@@ -13,7 +13,6 @@ export default class Home extends React.Component {
 		this.checkAutenticate = this.checkAutenticate.bind(this)
 	}
 	receiveMessage = async function(Message) {
-		console.log('setItem', Message.data)
 		let setValue = await localStorage.setItem('credentials', Message.data); 
 		let newState = { ...this.state }
 		newState.isAutenticated = true
@@ -21,9 +20,7 @@ export default class Home extends React.Component {
 	}
 	checkAutenticate = async function() {
 		let credentials = await getCredentials()
-		console.log(credentials)
 		if (credentials){
-			console.log('checou')
 			let newState = { ...this.state }
 			newState.isAutenticated = true
 			this.setState( newState )
@@ -77,7 +74,6 @@ export default class Home extends React.Component {
 	}
 
 	render() {
-		console.log(this.state.isAutenticated)
 		return (
 			<If condition={ this.state.isAutenticated }>
 				<Then>
