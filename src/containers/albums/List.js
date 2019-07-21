@@ -4,11 +4,13 @@ import { fetchAlbums } from '../../reducers/albums/Actions'
 import { connect } from 'react-redux'
 import { If, Then, Else } from 'react-if'
 import debounce from 'lodash.debounce'
+import inflection from 'inflection'
 
 class albumsList extends React.Component {
 	constructor() {
 		super();
 		this.state = {
+			history: {},
 			query: "",
 			item: {},
 			tracks: {
@@ -50,6 +52,37 @@ class albumsList extends React.Component {
 	componentWillReceiveProps(nextProps) {
 		if ( (typeof nextProps.items === 'object') && (typeof nextProps.items !== null) ){
 			let newState = { ...this.state }
+			let searchHistory = {}
+			let strHistory = localStorage.getItem('searchHistory')
+			if (typeof strHistory === 'string'){
+				searchHistory = JSON.parse(strHistory)
+			}
+			if (typeof nextProps.items.tracks.items === 'object'){
+				for (let i in nextProps.items.tracks.items){
+					let item = nextProps.items.tracks.items[i]
+					let ArtistName = inflection.dasherize( item.album.artists[0].name )
+					if (searchHistory[ArtistName] === undefined){
+						searchHistory[ArtistName] = {
+							Id: item.album.artists[0].id,
+							Name: item.album.artists[0].name ,
+							Image: item.album.images[0].url,
+							Albums: {}
+						}
+					}
+					let AlbumName = inflection.dasherize( item.album.name )
+					if (searchHistory[ArtistName]['Albums'][AlbumName] === undefined){
+						searchHistory[ArtistName]['Albums'][AlbumName] = {
+							Id: item.album.id,
+							Name: item.album.total_tracks,
+							TotalTracks: item.album.total_tracks,
+							Image: item.album.images[0].url
+						}
+					}		
+				}
+				newState.history = searchHistory
+				console.log(searchHistory)
+				localStorage.setItem('history', JSON.stringify(searchHistory) )
+			}
 			newState.tracks = { ...newState.tracks, ...nextProps.items.tracks }
 			this.setState(newState)     
 		}
