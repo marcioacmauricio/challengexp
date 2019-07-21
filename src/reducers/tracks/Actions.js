@@ -1,16 +1,25 @@
 import { READ_TRACKS, FETCH_TRACKS, NOTIFY_ERROR } from './types'
-import { Token, Url } from '../Conf'
-
+import { getCredentials } from '../../auth/getCredentials'
 export function readTracks(tracksData) {
 	const resource = Url + '/tracks/' + tracksData.id;
 	return async (dispatch) => {
+
+		let credentials = await getCredentials()
+		if (!credentials){
+			dispatch({
+				type: FETCH_ALBUMS,
+				payload: albumsList,
+				queryParams: albumsData
+			});		
+			return	
+		}
 		try {
 			const result = await fetch(
 				resource, 
 				{ 
 					method : 'GET',
 					headers : {
-						'Authorization': 'Bearer ' + Token
+						'Authorization': 'Bearer ' + credentials.access_token
 					}
 				}
 			)
@@ -35,13 +44,23 @@ export function fetchTracks(tracksData) {
 	const resource = Url + '/search?';
 	let queryString = Object.keys(tracksData).map(key => key + '=' + tracksData[key]).join('&');
 	return async (dispatch) => {
+		let credentials = await getCredentials()
+		if (!credentials){
+			dispatch({
+				type: FETCH_ALBUMS,
+				payload: albumsList,
+				queryParams: albumsData
+			});		
+			return	
+		}
+
 		try {
 			const result = await fetch(
 				resource + queryString, 
 				{ 
 					method : 'GET',
 					headers : {
-						'Authorization': 'Bearer ' + Token
+						'Authorization': 'Bearer ' + credentials.access_token
 					}
 				}
 			)

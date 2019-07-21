@@ -58,6 +58,9 @@ class albumsView extends React.Component {
 		if (typeof dataTrackPreview === 'string'){
 			if (this.preview !== dataTrackPreview){
 				this.preview = dataTrackPreview
+				if (this.audio !== null){
+					this.audio.pause()
+				}
 				this.audio = new Audio(dataTrackPreview)
 				this.audio.play()
 				e.target.classList.add('active')
@@ -83,7 +86,6 @@ class albumsView extends React.Component {
 			returnList.push(
 				<div key={i} className="music" onClick={ this.onClickTrack }>
 					<p className="music-number">{ track.track_number }</p>
-					<p className="music-title">{ track.name }</p>
 					<If condition={ typeof track.preview_url === 'string'}>
 						<Then>
 							<p className="music-preview">
@@ -96,6 +98,7 @@ class albumsView extends React.Component {
 							</p>
 						</Else>
 					</If>					
+					<p className="music-title">{ track.name }</p>
 					<p data-track-id={ track.id } className="music-duration">{convertToHumanTime(track.duration_ms)}</p>
 				</div>
 			)			

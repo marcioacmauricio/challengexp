@@ -235,3 +235,15 @@ section {
 .preview-image-deny {
 	height: 1.8em;
 }
+
+.input-login {
+	cursor: pointer;	
+	border: 1px solid #1c1c1f;
+    border-radius: 10px;
+    background-color: #16a248;
+    display: inline-block;
+    text-align: center;
+    padding: 10px 40px;
+    border-radius: 50px;   
+    color: #FAFAFA;
+}
