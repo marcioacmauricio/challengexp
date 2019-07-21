@@ -1,39 +1,63 @@
-import { READ_ALBUMS, FETCH_ALBUMS } from './types'
+import { READ_ALBUMS, FETCH_ALBUMS, NOTIFY_ERROR } from './types'
 import { Token, Url } from '../Conf'
 
-export const readAlbums = (albumId) => dispatch => {
-	fetch(Url + 'albums/' + albumId, { 
-		method : 'GET',
-			headers : {
-				'Authorization': 'Bearer ' + Token
-			}
-		})
-		.then(
-			res => res.json()
-		)
-		.then(
-			albumsList => dispatch({
-			type: READ_ALBUMS,
-			payload: albumsList
-		})
-	);
+export function readAlbums(albumsData) {
+	const resource = Url + '/albums/' + albumsData.id;
+	return async (dispatch) => {
+		try {
+			const result = await fetch(
+				resource, 
+				{ 
+					method : 'GET',
+					headers : {
+						'Authorization': 'Bearer ' + Token
+					}
+				}
+			)
+			const albumsList = await result.json()
+			dispatch({
+				type: READ_ALBUMS,
+				payload: albumsList,
+				queryParams: albumsData
+			});
+		} catch (error) {
+			console.log(error)
+			dispatch({
+				type: NOTIFY_ERROR,
+				payload: error,
+				queryParams: albumsData
+			});
+		}
+	};
 }
 
-export const fetchAlbums = (todoData) => dispatch => {
-	let queryString = Object.keys(todoData).map(key => key + '=' + todoData[key]).join('&');
-	fetch(Url + 'search?' + queryString , { 
-		method : 'GET',
-			headers : {
-				'Authorization': 'Bearer ' + Token
-			}
-		})
-		.then(
-			res => res.json()
-		)
-		.then(
-			albumsList => dispatch({
-			type: FETCH_ALBUMS,
-			payload: albumsList
-		})
-	);
+export function fetchAlbums(albumsData) {
+	const resource = Url + '/search?';
+	let queryString = Object.keys(albumsData).map(key => key + '=' + albumsData[key]).join('&');
+	return async (dispatch) => {
+		try {
+			const result = await fetch(
+				resource + queryString, 
+				{ 
+					method : 'GET',
+					headers : {
+						'Authorization': 'Bearer ' + Token
+					}
+				}
+			)
+			const albumsList = await result.json()
+			dispatch({
+				type: FETCH_ALBUMS,
+				payload: albumsList,
+				queryParams: albumsData
+			});
+		} catch (error) {
+			console.log(error)
+			dispatch({
+				type: NOTIFY_ERROR,
+				payload: error,
+				queryParams: albumsData
+			});
+		}
+	};
 }

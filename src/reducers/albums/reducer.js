@@ -1,23 +1,31 @@
-import { READ_ALBUMS, FETCH_ALBUMS } from './types'
+import { READ_ALBUMS, FETCH_ALBUMS, NOTIFY_ERROR } from './types'
 
 const initialState = {
 	items: [], 
-	item: {}
+	item: {},
+	erro: {},
+	queryParams: {}
 };
 
 export default function (state = initialState, action) {
+	const newState = { ...state }
+	newState.queryParams = action.queryParams
+
 	switch(action.type) {
-		case READ_ALBUMS: 
-			return { 
-				...state,
-				item: action.payload
-			};			
+
+		case READ_ALBUMS: 		
+			newState.item = action.payload
+			return newState		
+
 		case FETCH_ALBUMS: 
-			return {
-				...state,
-				items: action.payload
-			};
+			newState.items = action.payload
+			return newState	
+
+		case NOTIFY_ERROR: 
+			newState.erro = action.payload
+			return newState	
+				
 		default: 
-			return state;
+			return newState;
 	}   
 }

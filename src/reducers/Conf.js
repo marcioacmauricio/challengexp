@@ -1,2 +1,2 @@
-export const Token = 'BQCCYbxFGOyWI0A_9d3MGKwr8nD7HRNve8KsIWGR8VV6IyWnoO8_VkuOCi8tg8DUD6uzTEkX6FHFJWSbI-44ql8BhAyedhP55c4OGP__kse_pL2pstdTYGMnrSEX3On_hLZcjZra8EpYOV2M8xUgl6pJIJvKG20945oYj3pn00pLYsLgVabI0f2T5RXEcPi1vt42oMxTD1HSRm85U9aqyoFjl4-RAcbX2Uo2SarR08NjZKmpCpPEtZs'
-export const Url = "https://api.spotify.com/v1/"
+export const Token = 'BQDtpMxXqX1KpFq-pX7LdW5Fs6XxCIiwSUHPT0tugS8WHa3Xr6FB0QxPORLBpjLx8_qju14Fj2OdyZ-pgCxgpkQijRcQc8nTO1mCi2hNfuF1uk89j0rVKa2dyz-3-buXFx37xGmGwy6ihx2I2zyvQ1EwBSPQpMd9G-KcxHfjPa7AZiNUAHe2-YhWf7199kzPWMdChMAjObsBQVm9HALd3tKEzEZfAbW4ypwJcJm9w_4aV4GxvtKOcck'
+export const Url = "https://api.spotify.com/v1"
