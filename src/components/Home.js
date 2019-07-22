@@ -158,8 +158,7 @@ class Home extends React.Component {
 					)
 				}
 				Rets.push(
-					<div key={ Art } >
-						<h1>Buscas recentes</h1>
+					<div key={ Art } >	
 						<div className="wrapper" >
 							
 							{ Albums }
@@ -170,6 +169,8 @@ class Home extends React.Component {
 		}
 		return (
 			<div className="container">
+				<h1 className="aside-title">Buscas recentes</h1>
+
 				{ Rets }
 			</div>
 		)		
