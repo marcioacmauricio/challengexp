@@ -20,7 +20,6 @@ section {
 	display: block;
 	align-items: center;
 	color: #FAFAFA;
-	display: flex;
 	text-decoration: none;
 	transition: color .4s;
 }
@@ -35,6 +34,7 @@ section {
 
 .aside-header {
 	margin-bottom: 20px;
+	min-height: 60px;
 }
 
 .aside-link {
@@ -44,6 +44,7 @@ section {
 	height: 32px;
 	text-decoration: none;
 	transition: color .4s;
+	float: left;
 }
 
 .aside-link:hover {
@@ -85,11 +86,6 @@ section {
 	width: 22px;
 }
 
-
-
-
-
-
 .list-item {
 	align-items: center;
 	cursor: pointer;
@@ -119,7 +115,6 @@ section {
 }
 
 .container {
-	background-image: linear-gradient(rgb(70, 76, 82), rgb(7, 7, 8) 85%);
 	height: 100vh;
 	overflow: scroll;
 	width: 100%;
@@ -243,7 +238,13 @@ section {
     background-color: #16a248;
     display: inline-block;
     text-align: center;
-    padding: 10px 40px;
+    padding: 7px 25px;
     border-radius: 50px;   
     color: #FAFAFA;
+    float: right;
+}
+
+.wrapper {
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
 }

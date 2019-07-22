@@ -1,13 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { If, Then, Else } from 'react-if'
+import { getCredentials } from '../auth/getCredentials'
 
 export default class Header extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			artist: "",
-			isOpen: false
+			isAutenticated: false
 		};
+		this.setToken = this.setToken.bind(this)
+		this.exit = this.exit.bind(this)
+		this.receiveMessage = this.receiveMessage.bind(this)
+		this.checkAutenticate = this.checkAutenticate.bind(this)		
 	}
 	componentWillMount() {
 		let hash = {};
@@ -19,19 +25,65 @@ export default class Header extends React.Component {
 				}
 			});
 
-			console.log('initial hash', hash);
-
 			if (hash.access_token) {
 				window.opener.postMessage(JSON.stringify({
 					type:'access_token',
 					access_token: hash.access_token,
-					expires_in: hash.expires_in || 0
+					expires_in: new Date().getTime() + ((hash.expires_in || 0) * 1000)
 				}), '*');
 				window.close();
 			}			
+		} else {
+			this.checkAutenticate()			
 		}
-
 	}
+
+	exit(e){
+		localStorage.removeItem('credentials')
+		let newState = { ...this.state }
+		newState.isAutenticated = false
+		this.setState( newState )		
+	}
+	setToken(e){
+		debugger
+		window.addEventListener("message", this.receiveMessage, false);
+		let Scopes = [
+			'user-read-private',
+			'playlist-read-private',
+			'playlist-modify-public',
+			'playlist-modify-private',
+			'user-library-read',
+			'user-library-modify',
+			'user-follow-read',
+			'user-follow-modify'
+		]
+		let Params = {
+			client_id: "ff86be0df0f94dbbb4ba03082f63342a",
+			response_type: "token",
+			redirect_uri: "http://localhost:8080/",
+			scope: encodeURI(Scopes.join(' '))
+		}
+		let url = "https://accounts.spotify.com/authorize?" +  Object.keys(Params).map(key => key + '=' + Params[key]).join('&');
+		let width = 450, height = 730, left = (screen.width / 2) - (width / 2), top = (screen.height / 2) - (height / 2);	
+		let w = window.open(url, 'Spotify', 'menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left );			
+	}
+	receiveMessage = async function(Message) {
+		if(typeof Message.data === 'string'){
+			let setValue = await localStorage.setItem('credentials', Message.data); 
+			let newState = { ...this.state }
+			newState.isAutenticated = true
+			this.setState( newState )			
+		}
+	}
+	checkAutenticate = async function() {
+		let credentials = await getCredentials()
+		if (credentials){
+			let newState = { ...this.state }
+			newState.isAutenticated = true
+			this.setState( newState )
+		}
+	}	
+
 	componentWillReceiveProps(nextProps) {
 		debugger
 	}
@@ -46,11 +98,27 @@ export default class Header extends React.Component {
 						</svg>
 						<h1 className="aside-title">React Spotify Player</h1>
 					</a>
+					<If condition={ this.state.isAutenticated }>
+						<Then>
+							<span onClick={ this.exit } className="input-login">Sair</span>			
+						</Then>
+						<Else>
+							<span onClick={ this.setToken } className="input-login">Login</span>
+						</Else>
+					</If>					
 				</header>
 				<div>
-					<div>
-						{this.props.children}
-					</div>
+
+					<If condition={ this.state.isAutenticated }>
+						<Then>
+							<div>
+								{this.props.children}
+							</div>	
+						</Then>
+						<Else>
+							Autentique-se para pesquisar sua música!
+						</Else>
+					</If>						
 				</div>
 			</div>
 		);

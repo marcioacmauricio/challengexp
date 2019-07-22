@@ -1,88 +1,212 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { fetchAlbums } from '../reducers/albums/Actions'
+import { connect } from 'react-redux'
 import { If, Then, Else } from 'react-if'
-import { getCredentials } from '../auth/getCredentials'
-export default class Home extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {		
-			isAutenticated: false
+import debounce from 'lodash.debounce'
+import clearStr from '../util/clearStr';
+
+class Home extends React.Component {
+	constructor() {
+		super();
+		this.state = {
+			searchHistory: {},
+			query: "",
+			item: {},
+			tracks: {
+				href: "",
+				items: [],
+				limit: 10,
+				next: "",
+				previous: "",
+				offset: 0,
+				total: 0
+			}
 		};
-		this.setToken = this.setToken.bind(this)
-		this.receiveMessage = this.receiveMessage.bind(this)
-		this.checkAutenticate = this.checkAutenticate.bind(this)
+		this.items = true
+		this.debouncedHandleChange = debounce(this.debouncedHandleChange, 500)
+
 	}
-	receiveMessage = async function(Message) {
-		let setValue = await localStorage.setItem('credentials', Message.data); 
+	handleChange = (event) => {
+		this.debouncedHandleChange(event.target)
 		let newState = { ...this.state }
-		newState.isAutenticated = true
-		this.setState( newState )
-	}
-	checkAutenticate = async function() {
-		let credentials = await getCredentials()
-		if (credentials){
-			let newState = { ...this.state }
-			newState.isAutenticated = true
-			this.setState( newState )
+		newState.query = event.target.value
+		this.setState(newState)
+	} 
+	debouncedHandleChange = (target) => {
+		let term = "" 
+		if (target.value !== ""){
+			term = target.value
 		}
-	}	
-	setToken(e){
-		window.addEventListener("message", this.receiveMessage, false);
-		let Scopes = [
-			'user-read-private',
-			'playlist-read-private',
-			'playlist-modify-public',
-			'playlist-modify-private',
-			'user-library-read',
-			'user-library-modify',
-			'user-follow-read',
-			'user-follow-modify'
-		]
-		let Params = {
-			client_id: "ff86be0df0f94dbbb4ba03082f63342a",
-			response_type: "token",
-			redirect_uri: "http://localhost:8080/",
-			scope: encodeURI(Scopes.join(' '))
+		if (term.length > 2){
+			let Post = {
+				q: target.value,
+				type: 'track',
+				limit: 10,
+				offset: 0
+			}
+			this.props.fetchAlbums( Post )
 		}
-		let url = "https://accounts.spotify.com/authorize?" +  Object.keys(Params).map(key => key + '=' + Params[key]).join('&');
-		let width = 450, height = 730, left = (screen.width / 2) - (width / 2), top = (screen.height / 2) - (height / 2);	
-		let w = window.open(url, 'Spotify', 'menubar=no,location=no,resizable=no,scrollbars=no,status=no, width=' + width + ', height=' + height + ', top=' + top + ', left=' + left );
+	}   
 
-			
-	}
+
 	componentWillMount() {
-		let hash = {};
-		if (location.hash !== "" ){
-			location.hash.replace(/^#\/?/, '').split('&').forEach(function(kv) {
-				let spl = kv.indexOf('=');
-				if (spl != -1) {
-					hash[kv.substring(0, spl)] = decodeURIComponent(kv.substring(spl+1));
+		let searchHistory = {}
+		let stringSearch = localStorage.getItem('searchHistory')
+		if (typeof stringSearch === 'string'){
+			searchHistory = JSON.parse(stringSearch)
+			let newState = { ...this.state }
+			newState.searchHistory = searchHistory
+			this.setState(newState)
+		}	
+	}
+	componentWillReceiveProps(nextProps) {
+		if ( (typeof nextProps.items === 'object') && (typeof nextProps.items !== null) ){
+			let newState = { ...this.state }
+			let searchHistory = {}
+			let strHistory = localStorage.getItem('searchHistory')
+			if (typeof strHistory === 'string'){
+				searchHistory = JSON.parse(strHistory)
+			}
+			if (typeof nextProps.items.tracks.items === 'object'){
+				for (let i in nextProps.items.tracks.items){
+					let item = nextProps.items.tracks.items[i]
+					let ArtistName = clearStr( item.album.artists[0].name )
+					if (searchHistory[ArtistName] === undefined){
+						searchHistory[ArtistName] = {
+							Id: item.album.artists[0].id,
+							Name: item.album.artists[0].name ,
+							Image: item.album.images[0].url,
+							Albums: {}
+						}
+					}
+					let AlbumName = clearStr( item.album.name )
+					if (searchHistory[ArtistName]['Albums'][AlbumName] === undefined){
+						searchHistory[ArtistName]['Albums'][AlbumName] = {
+							Id: item.album.id,
+							Name: item.album.name,
+							TotalTracks: item.album.total_tracks,
+							Image: item.album.images[0].url,
+							ArtistName: item.album.artists[0].name
+						}
+					}		
 				}
-			});
-
-			if (hash.access_token) {
-				window.opener.postMessage(JSON.stringify({
-					type:'access_token',
-					access_token: hash.access_token,
-					expires_in: new Date().getTime() + ((hash.expires_in || 0) * 1000)
-				}), '*');
-				window.close();
-			}			
-		} else {
-			this.checkAutenticate()			
+				newState.history = searchHistory
+				console.log(searchHistory)
+				localStorage.setItem('searchHistory', JSON.stringify(searchHistory) )
+			}
+			newState.tracks = { ...newState.tracks, ...nextProps.items.tracks }
+			this.setState(newState)     
 		}
 	}
+	renderAlbums(){
+		// debugger
+		let renderList = []
+		let items = {}
+		for (let i in this.state.tracks.items){
+			let Track = this.state.tracks.items[i]
+			let Artists = Track.album.artists
+			let Artist = Artists[0]
+			items[ Track.album.id ] = {
+				img: Track.album.images[0],
+				artistName: Artist.name,
+				albumName: Track.album.name,
+				totalTracks: Track.album.total_tracks
+			}
+		}
+		for (let j in items){
+			let item = items[j]
+			// debugger
+			renderList.push(
+				<div key={ j }>
+					<div className="album-info">
+						<Link to={`/albums/${ clearStr(item.artistName) }/${ clearStr(item.albumName) }`}>
+							<img className="album-image" src={ item.img.url } alt={ item.artistName }/>
+						</Link>                     
+						<p className="album-title"><Link className="link" to={`/albums/${ clearStr(item.artistName) }/${ clearStr(item.albumName) }`}>{ item.albumName }</Link></p>
+						<p className="album-artist"><Link className="link" to={`/albums/${ clearStr(item.artistName) }`}>{ item.artistName }</Link></p>
+						<p className="album-counter">{ item.totalTracks }</p>
+					</div>
+				</div>
+			)           
+		}
 
-	render() {
 		return (
-			<If condition={ this.state.isAutenticated }>
-				<Then>
-					<Link to="albums" className="input-login">Pesquisar</Link>			
-				</Then>
-				<Else>
-					<span onClick={ this.setToken } className="input-login">Login</span>
-				</Else>
-			</If>
+			<div className="wrapper">
+				{ renderList }
+			</div>
+		)
+	}
+	renderSearchHistory(){
+		let Rets = []
+		if (( typeof this.state.searchHistory === 'object') && (this.state.searchHistory !== null)){
+			for (let Art in this.state.searchHistory){
+
+				let Artist = this.state.searchHistory[Art]
+				let Albums = []
+				for (let Alb in Artist.Albums){
+					let Album = Artist.Albums[Alb]
+					Albums.push(
+						<div key={ Alb } className="album-info">
+							<Link to={`/albums/${Art}/${Alb}`}>
+								<img className="album-image" src={ Album.Image } alt={ Artist.Name }/>
+							</Link>                     
+							<p className="album-title"><Link className="link" to={`/albums/${Art}/${Alb}`}>{ Album.Name }</Link></p>
+							<p className="album-artist"><Link className="link" to={`/albums/${Art}`}>{ Artist.Name }</Link></p>
+							<p className="album-counter">{ Artist.TotalTracks }</p>
+						</div>
+					)
+				}
+				Rets.push(
+					<div key={ Art } >
+						<h1>Buscas recentes</h1>
+						<div className="wrapper" >
+							
+							{ Albums }
+						</div>
+					</div>
+				)
+			}
+		}
+		return (
+			<div className="container">
+				{ Rets }
+			</div>
+		)		
+	}
+	onSubmit(e){
+		e.preventDefault()
+	}
+	render() {
+		const albumsItems = this.renderAlbums()
+		return (
+			<div>
+				<div>
+					<form id="search-form" onSubmit={ this.onSubmit } className="form-wrapper">
+						<input value={ this.state.value } className="form-input" type="text" placeholder="Comece a escrever..."  onChange={ this.handleChange } />
+					</form>
+				</div>
+				<If condition={ this.state.tracks.items.length > 0 }>
+					<Then>
+						<div className="container">
+							<h1>Lista de Albuns</h1>
+							{albumsItems}       
+						</div>            
+					</Then>
+				</If>
+				<div className="search-history"> 
+					{this.renderSearchHistory()}
+				</div>
+			</div>
 		);
 	}
 }
+
+const mapStateToProps = (state, props) => {
+	return {
+		item: state.albumsReducer.item,
+		items: state.albumsReducer.items
+	}
+	
+}
+export default connect(mapStateToProps, { fetchAlbums })(Home);

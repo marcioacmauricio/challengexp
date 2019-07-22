@@ -10,8 +10,8 @@ const Routes = () => (
 	<main>
 		<Switch>
 			<Route exact path='/' component={Home}/>
-			<Route exact path='/albums' component={albumsList}/>
-			<Route path='/albums/:id' component={albumsView}/>
+			<Route exact path='/albums/:artist' component={albumsList}/>
+			<Route exact path='/albums/:artist/:id' component={albumsView}/>
 		</Switch>
 	</main>
 )
